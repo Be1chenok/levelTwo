@@ -14,8 +14,8 @@ import "fmt"
 */
 
 // Интерфейс команды
-type command interface {
-	execute()
+type Command interface {
+	Execute()
 }
 
 // Receiver - получатель команды
@@ -44,21 +44,21 @@ type turnOffLEDCommand struct {
 	ledStrip *ledStrip
 }
 
-func (onCmd *turnOnLEDCommand) execute() {
+func (onCmd *turnOnLEDCommand) Execute() {
 	onCmd.ledStrip.turnOn()
 }
 
-func (offCmd *turnOffLEDCommand) execute() {
+func (offCmd *turnOffLEDCommand) Execute() {
 	offCmd.ledStrip.turnOff()
 }
 
 // Invoker - вызывающий объект
 type remoteControl struct {
-	pressOn  command
-	pressOff command
+	pressOn  Command
+	pressOff Command
 }
 
-func newRemoteControl(pressOn, pressOff command) *remoteControl {
+func newRemoteControl(pressOn, pressOff Command) *remoteControl {
 	return &remoteControl{
 		pressOn:  pressOn,
 		pressOff: pressOff,
@@ -66,11 +66,11 @@ func newRemoteControl(pressOn, pressOff command) *remoteControl {
 }
 
 func (rc *remoteControl) pressOnExec() {
-	rc.pressOn.execute()
+	rc.pressOn.Execute()
 }
 
 func (rc *remoteControl) pressOffExec() {
-	rc.pressOff.execute()
+	rc.pressOff.Execute()
 }
 
 func main() {

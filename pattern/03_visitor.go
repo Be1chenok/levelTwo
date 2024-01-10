@@ -1,12 +1,6 @@
 package pattern
 
 /*
-	Реализовать паттерн «посетитель».
-	Объяснить применимость паттерна, его плюсы и минусы, а также реальные примеры использования данного примера на практике.
-	https://en.wikipedia.org/wiki/Visitor_pattern
-*/
-
-/*
 	В данном файле реализован паттерн посетитель на примере товаров в магазине
 	Следует определить цену конкретного товара по скидке
 */
@@ -19,14 +13,14 @@ package pattern
 import "fmt"
 
 // Интерфейс посетителя товаров
-type itemVisitor interface {
-	visitBook(book book)
-	visitNotepad(notepad notepad)
+type ItemVisitor interface {
+	VisitBook(book book)
+	VisitNotepad(notepad notepad)
 }
 
 // Общий интерфейс для всех товаров
 type Item interface {
-	accept(visitor itemVisitor)
+	accept(visitor ItemVisitor)
 }
 
 // Структура книги
@@ -44,8 +38,8 @@ func newBook(title string, price float32, discount int) Item {
 	}
 }
 
-func (b book) accept(visitor itemVisitor) {
-	visitor.visitBook(b)
+func (b book) accept(visitor ItemVisitor) {
+	visitor.VisitBook(b)
 }
 
 // Структура блокнота
@@ -63,25 +57,25 @@ func newNotepad(title string, price float32, discount int) Item {
 	}
 }
 
-func (n notepad) accept(visitor itemVisitor) {
-	visitor.visitNotepad(n)
+func (n notepad) accept(visitor ItemVisitor) {
+	visitor.VisitNotepad(n)
 }
 
 // Структура посетителя
 type saleVisitor struct{}
 
-func newSaleVisitor() itemVisitor {
+func NewSaleVisitor() ItemVisitor {
 	return &saleVisitor{}
 }
 
-func (v saleVisitor) visitBook(book book) {
+func (v saleVisitor) VisitBook(book book) {
 	fmt.Printf("book: %s\n", book.title)
 	fmt.Printf("Price: %.2f $\n", book.price)
 	discountedPrice := calculateDiscountPrice(book.price, book.discount)
 	fmt.Printf("Discounted price: %.2f $\n", discountedPrice)
 }
 
-func (v saleVisitor) visitNotepad(notepad notepad) {
+func (v saleVisitor) VisitNotepad(notepad notepad) {
 	fmt.Printf("notepad: %s\n", notepad.title)
 	fmt.Printf("Price: %.2f $\n", notepad.price)
 	discountedPrice := calculateDiscountPrice(notepad.price, notepad.discount)
@@ -98,7 +92,7 @@ func calculateDiscountPrice(price float32, discount int) float32 {
 
 func main() {
 	// Создаем посетителя
-	visitor := newSaleVisitor()
+	visitor := NewSaleVisitor()
 
 	// Создаем товары
 	grokkingAlgorithms := newBook("Grokking Algorithms", 100.0, 50)

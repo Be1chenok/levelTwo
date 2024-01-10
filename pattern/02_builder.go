@@ -12,11 +12,11 @@ import "fmt"
 */
 
 // Интерфейс для строительства дома
-type houseBuilder interface {
-	setWindowType()
-	setDoorType()
-	setNumFloor()
-	getHouse() house
+type HouseBuilder interface {
+	SetWindowType()
+	SetDoorType()
+	SetNumFloor()
+	GetHouse() house
 }
 
 // Структура дома
@@ -26,7 +26,7 @@ type house struct {
 	floor      int
 }
 
-func newHouse(windowType, doorType string, floor int) house {
+func NewHouse(windowType, doorType string, floor int) house {
 	return house{
 		windowType: windowType,
 		doorType:   doorType,
@@ -43,19 +43,19 @@ func newWoodenBuilder() *woodenBuilder {
 	return &woodenBuilder{}
 }
 
-func (wb *woodenBuilder) getHouse() house {
-	return newHouse(wb.h.windowType, wb.h.doorType, wb.h.floor)
+func (wb *woodenBuilder) GetHouse() house {
+	return NewHouse(wb.h.windowType, wb.h.doorType, wb.h.floor)
 }
 
-func (wb *woodenBuilder) setWindowType() {
+func (wb *woodenBuilder) SetWindowType() {
 	wb.h.windowType = "wooden window"
 }
 
-func (wb *woodenBuilder) setDoorType() {
+func (wb *woodenBuilder) SetDoorType() {
 	wb.h.doorType = "wooden door"
 }
 
-func (wb *woodenBuilder) setNumFloor() {
+func (wb *woodenBuilder) SetNumFloor() {
 	wb.h.floor = 1
 }
 
@@ -68,46 +68,46 @@ func newStoneBuilder() *stoneBuilder {
 	return &stoneBuilder{}
 }
 
-func (sb *stoneBuilder) getHouse() house {
-	return newHouse(sb.h.windowType, sb.h.doorType, sb.h.floor)
+func (sb *stoneBuilder) GetHouse() house {
+	return NewHouse(sb.h.windowType, sb.h.doorType, sb.h.floor)
 }
 
-func (sb *stoneBuilder) setWindowType() {
+func (sb *stoneBuilder) SetWindowType() {
 	sb.h.windowType = "stone window"
 }
 
-func (sb *stoneBuilder) setDoorType() {
+func (sb *stoneBuilder) SetDoorType() {
 	sb.h.doorType = "stone door"
 }
 
-func (sb *stoneBuilder) setNumFloor() {
+func (sb *stoneBuilder) SetNumFloor() {
 	sb.h.floor = 2
 }
 
 // Директор - управляет процессом постройки дома
 type director struct {
-	builder houseBuilder
+	builder HouseBuilder
 }
 
-func newDirector(builder houseBuilder) *director {
+func NewDirector(builder HouseBuilder) *director {
 	return &director{
 		builder: builder,
 	}
 }
 
-func (d *director) setBuilder(builder houseBuilder) {
+func (d *director) setBuilder(builder HouseBuilder) {
 	d.builder = builder
 }
 
 func (d *director) buildHouse() house {
-	d.builder.setWindowType()
-	d.builder.setDoorType()
-	d.builder.setNumFloor()
+	d.builder.SetWindowType()
+	d.builder.SetDoorType()
+	d.builder.SetNumFloor()
 
-	return d.builder.getHouse()
+	return d.builder.GetHouse()
 }
 
-func getBuilder(builderType string) houseBuilder {
+func getBuilder(builderType string) HouseBuilder {
 	switch builderType {
 	case "wooden":
 		return newWoodenBuilder()
@@ -123,7 +123,7 @@ func main() {
 	stoneBuilder := getBuilder("stone")
 
 	// Создаем директора и говорим, что будем строить деревянный дом
-	director := newDirector(woodenBuilder)
+	director := NewDirector(woodenBuilder)
 
 	// Строим и получаем дом
 	woodenHouse := director.buildHouse()

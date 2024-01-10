@@ -14,9 +14,9 @@ import "fmt"
 */
 
 // Интерфейс обработчика
-type purchaseHandler interface {
-	handlePurchase(purchase *purchase)
-	setNextHandler(next purchaseHandler)
+type PurchaseHandler interface {
+	HandlePurchase(purchase *purchase)
+	SetNextHandler(next PurchaseHandler)
 }
 
 // Структура представляющая покупку
@@ -26,7 +26,7 @@ type purchase struct {
 	totalCost float32
 }
 
-func newPurchase(product string, quantity int, totalCost float32) *purchase {
+func NewPurchase(product string, quantity int, totalCost float32) *purchase {
 	return &purchase{
 		product:   product,
 		quantity:  quantity,
@@ -36,16 +36,16 @@ func newPurchase(product string, quantity int, totalCost float32) *purchase {
 
 // Базовая реализация обработчика
 type basePurchaseHandler struct {
-	nextHandler purchaseHandler
+	nextHandler PurchaseHandler
 }
 
-func (bph *basePurchaseHandler) setNextHandler(next purchaseHandler) {
+func (bph *basePurchaseHandler) SetNextHandler(next PurchaseHandler) {
 	bph.nextHandler = next
 }
 
-func (bph *basePurchaseHandler) handlePurchase(purchase *purchase) {
+func (bph *basePurchaseHandler) HandlePurchase(purchase *purchase) {
 	if bph.nextHandler != nil {
-		bph.nextHandler.handlePurchase(purchase)
+		bph.nextHandler.HandlePurchase(purchase)
 	}
 }
 
@@ -59,14 +59,14 @@ type deliveryHandler struct {
 	basePurchaseHandler
 }
 
-func (dh *deliveryHandler) handlePurchase(purchase *purchase) {
+func (dh *deliveryHandler) HandlePurchase(purchase *purchase) {
 	if purchase.totalCost > 5000 {
 		purchase.totalCost -= 5 // Применяем скидку на доставку
 		fmt.Println("delivery discount applied")
 	}
 
 	// Передаем обработку следующему обработчику
-	dh.basePurchaseHandler.handlePurchase(purchase)
+	dh.basePurchaseHandler.HandlePurchase(purchase)
 }
 
 // Обработчик для подтверждения заказа
@@ -74,11 +74,11 @@ type confirmationHandler struct {
 	basePurchaseHandler
 }
 
-func (ch *confirmationHandler) handlePurchase(purchase *purchase) {
+func (ch *confirmationHandler) HandlePurchase(purchase *purchase) {
 	fmt.Printf("order %s confirmed\n", purchase.product)
 
 	// Передаем обработку следующему обработчику
-	ch.basePurchaseHandler.handlePurchase(purchase)
+	ch.basePurchaseHandler.HandlePurchase(purchase)
 }
 
 func main() {
@@ -88,15 +88,15 @@ func main() {
 	confirmationHandler := new(confirmationHandler)
 
 	// Создаем и обрабатываем покупки
-	discountHandler.setNextHandler(deliveryHandler)
-	deliveryHandler.setNextHandler(confirmationHandler)
+	discountHandler.SetNextHandler(deliveryHandler)
+	deliveryHandler.SetNextHandler(confirmationHandler)
 
-	firstPurchase := newPurchase("laptop", 1, 90000.0)
-	discountHandler.handlePurchase(firstPurchase)
+	firstPurchase := NewPurchase("laptop", 1, 90000.0)
+	discountHandler.HandlePurchase(firstPurchase)
 
-	secondPurchase := newPurchase("phone", 2, 50000.0)
-	discountHandler.handlePurchase(secondPurchase)
+	secondPurchase := NewPurchase("phone", 2, 50000.0)
+	discountHandler.HandlePurchase(secondPurchase)
 
-	thirdPurchase := newPurchase("lamp", 10, 3000.0)
-	discountHandler.handlePurchase(thirdPurchase)
+	thirdPurchase := NewPurchase("lamp", 10, 3000.0)
+	discountHandler.HandlePurchase(thirdPurchase)
 }

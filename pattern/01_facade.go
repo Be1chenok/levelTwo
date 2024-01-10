@@ -16,10 +16,6 @@ import "fmt"
 // Структура загрузчика изображения
 type imageLoader struct{}
 
-func NewImageLoader() *imageLoader {
-	return &imageLoader{}
-}
-
 func (imgl *imageLoader) LoadImage(filePath string) {
 	fmt.Printf("\nimage loading: %s", filePath)
 }
@@ -27,20 +23,12 @@ func (imgl *imageLoader) LoadImage(filePath string) {
 // Структура для изменения размера изображения
 type imageResizer struct{}
 
-func NewImageResizer() *imageResizer {
-	return &imageResizer{}
-}
-
 func (imgr *imageResizer) ResizeImage(width, height int) {
 	fmt.Printf("\nimage resolution change: width: %d, height: %d", width, height)
 }
 
 // Структура для фильтра изображения
 type imageFilter struct{}
-
-func NewImageFilter() *imageFilter {
-	return &imageFilter{}
-}
 
 func (imgf *imageFilter) ApplyFilter(filterType string) {
 	fmt.Printf("\nfilter application: %s", filterType)
