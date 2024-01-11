@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -11,31 +12,33 @@ import (
 )
 
 /*
-=== Утилита sort ===
-Отсортировать строки (man sort)
-Основное
-Поддержать ключи
--k — указание колонки для сортировки
--n — сортировать по числовому значению
--r — сортировать в обратном порядке
--u — не выводить повторяющиеся строки
-Дополнительное
-Поддержать ключи
--M — сортировать по названию месяца
--b — игнорировать хвостовые пробелы
--c — проверять отсортированы ли данные
--h — сортировать по числовому значению с учётом суффиксов
-Программа должна проходить все тесты. Код должен проходить проверки go vet и golint.
+	Отсортировать строки (man sort)
+	Основное
+	Поддержать ключи
+		-k — указание колонки для сортировки
+		-n — сортировать по числовому значению
+		-r — сортировать в обратном порядке
+		-u — не выводить повторяющиеся строки
+	Дополнительное
+	Поддержать ключи
+		-M — сортировать по названию месяца
+		-b — игнорировать хвостовые пробелы
+		-c — проверять отсортированы ли данные
+		-h — сортировать по числовому значению с учётом суффиксов
+	Программа должна проходить все тесты.
+	Код должен проходить проверки go vet и golint.
 */
 
 type Flags struct {
+	Input        string
+	Output       string
 	ColumnSort   int
 	NumericSort  bool
 	ReverseSort  bool
 	UniqueValues bool
 }
 
-func fixUpperCaseOrder(strs []string) {
+func fixUpperCase(strs []string) []string {
 	for i := 0; i < len(strs)-1; i++ {
 		str1 := []rune(strs[i])
 		str2 := []rune(strs[i+1])
@@ -43,46 +46,40 @@ func fixUpperCaseOrder(strs []string) {
 		if unicode.ToLower(str1[0]) == unicode.ToLower(str2[0]) &&
 			unicode.IsUpper(str1[0]) &&
 			unicode.IsLower(str2[0]) {
-			buf := strs[i]
+			temp := strs[i]
 			strs[i] = strs[i+1]
-			strs[i+1] = buf
+			strs[i+1] = temp
 		}
 	}
+
+	return strs
 }
 
-func stringQuickSort(strs []string, start, end int, numericSort bool) {
+func quickSort(strs []string, start, end int, numericSort bool) []string {
 	if start < end {
 		pivot := strs[start]
-
 		left := start
 		right := end
 
 		for left < right {
-
 			if !numericSort {
 				for left < right && strings.ToLower(strs[right]) >= strings.ToLower(pivot) {
 					right--
 				}
 			} else {
-				r, err := strconv.Atoi(strs[right])
+				p, err := strconv.Atoi(pivot)
 				if err != nil {
-					log.Fatalf("not number: %s", strs[right])
+					log.Fatalf("not a number: %s", pivot)
 				}
-				b, err := strconv.Atoi(pivot)
-				if err != nil {
-					log.Fatalf("not number: %s", strs[right])
-				}
-				for left < right && r >= b {
-
-					right--
-
-					r, err = strconv.Atoi(strs[right])
+				for left < right {
+					r, err := strconv.Atoi(strs[right])
 					if err != nil {
-						log.Fatalf("not number: %s", strs[right])
+						log.Fatalf("not a number: %s", strs[right])
 					}
-					b, err = strconv.Atoi(pivot)
-					if err != nil {
-						log.Fatalf("not number: %s", strs[right])
+					if r >= p {
+						right--
+					} else {
+						break
 					}
 				}
 			}
@@ -97,23 +94,19 @@ func stringQuickSort(strs []string, start, end int, numericSort bool) {
 					left++
 				}
 			} else {
-				l, err := strconv.Atoi(strs[left])
+				p, err := strconv.Atoi(pivot)
 				if err != nil {
-					log.Fatalf("not number: %s", strs[right])
+					log.Fatalf("not a number: %s", pivot)
 				}
-				b, err := strconv.Atoi(pivot)
-				if err != nil {
-					log.Fatalf("not number: %s", strs[right])
-				}
-				for left < right && l <= b {
-					left++
-					l, err = strconv.Atoi(strs[left])
+				for left < right {
+					l, err := strconv.Atoi(strs[left])
 					if err != nil {
-						log.Fatalf("not number: %s", strs[right])
+						log.Fatalf("not a number: %s", strs[left])
 					}
-					b, err = strconv.Atoi(pivot)
-					if err != nil {
-						log.Fatalf("not number: %s", strs[right])
+					if l <= p {
+						left++
+					} else {
+						break
 					}
 				}
 			}
@@ -126,17 +119,21 @@ func stringQuickSort(strs []string, start, end int, numericSort bool) {
 
 		strs[left] = pivot
 
-		stringQuickSort(strs, start, left-1, numericSort)
-		stringQuickSort(strs, left+1, end, numericSort)
+		strs = quickSort(strs, start, left-1, numericSort)
+		strs = quickSort(strs, left+1, end, numericSort)
 	}
+
+	sortedStrs := make([]string, len(strs))
+	copy(sortedStrs, strs)
+	return sortedStrs
 }
 
 func onlyUnique(data []string) []string {
 	res := make([]string, 0, len(data))
-	m := make(map[string]bool)
+	m := make(map[string]struct{})
 	for _, str := range data {
 		if _, ok := m[str]; !ok {
-			m[str] = true
+			m[str] = struct{}{}
 			res = append(res, str)
 		}
 	}
@@ -157,7 +154,7 @@ func getKeysOfMap(m map[string]string) []string {
 	return keys
 }
 
-func sortByColumn(strs []string, flg Flags) {
+func sortByColumn(strs []string, flg Flags) []string {
 	srcMap := make(map[string]string)
 	for _, str := range strs {
 		columns := strings.Split(str, " ")
@@ -168,29 +165,31 @@ func sortByColumn(strs []string, flg Flags) {
 		srcMap[columns[0]] = str
 	}
 	keysToBeSorted := getKeysOfMap(srcMap)
-	stringQuickSort(keysToBeSorted, 0, len(keysToBeSorted)-1, flg.NumericSort)
+	quickSort(keysToBeSorted, 0, len(keysToBeSorted)-1, flg.NumericSort)
+	sortedStrs := make([]string, len(strs))
 	for i, key := range keysToBeSorted {
-		strs[i] = srcMap[key]
+		sortedStrs[i] = srcMap[key]
 	}
+	return sortedStrs
 }
 
-func Sort(inFilePath, outFilePath string, flg Flags) {
-	strs := readFile(inFilePath)
+func Sort(flg Flags) {
+	strs := readFile(flg.Input)
 
 	result := make([]string, len(strs))
 	copy(result, strs)
 
 	if flg.ColumnSort >= 0 {
-		sortByColumn(result, flg)
-		fixUpperCaseOrder(result)
+		result = sortByColumn(result, flg)
+		result = fixUpperCase(result)
 	} else {
-		stringQuickSort(result, 0, len(result)-1, false)
-		fixUpperCaseOrder(result)
+		result = quickSort(result, 0, len(result)-1, false)
+		result = fixUpperCase(result)
 	}
 
 	if flg.UniqueValues {
-		stringQuickSort(result, 0, len(result)-1, false)
-		fixUpperCaseOrder(result)
+		result = quickSort(result, 0, len(result)-1, false)
+		result = fixUpperCase(result)
 		result = onlyUnique(result)
 	}
 
@@ -198,7 +197,7 @@ func Sort(inFilePath, outFilePath string, flg Flags) {
 		reversed(result)
 	}
 
-	writeToFile(outFilePath, result)
+	writeToFile(flg.Output, result)
 }
 
 func readFile(fileName string) []string {
@@ -241,13 +240,33 @@ func writeToFile(fileName string, strs []string) {
 	}
 }
 
-func main() {
+func parseFlags() Flags {
+	in := flag.String("in", "", "input file path")
+	out := flag.String("out", "", "output file path")
+	columnSort := flag.Int("k", -1, "column number for sorting")
+	numericSort := flag.Bool("n", false, "sort numerically")
+	reverseSort := flag.Bool("r", false, "sort in reverse order")
+	uniqueValues := flag.Bool("u", false, "show only unique values")
+
+	flag.Parse()
+
 	flg := Flags{
-		ColumnSort:   2,
-		NumericSort:  false,
-		ReverseSort:  false,
-		UniqueValues: false,
+		Input:        *in,
+		Output:       *out,
+		ColumnSort:   *columnSort,
+		NumericSort:  *numericSort,
+		ReverseSort:  *reverseSort,
+		UniqueValues: *uniqueValues,
 	}
 
-	Sort("text.txt", "sorted.txt", flg)
+	if *in == "" || *out == "" {
+		log.Fatal("required: input and output files")
+	}
+
+	return flg
+}
+
+func main() {
+	flg := parseFlags()
+	Sort(flg)
 }
