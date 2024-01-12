@@ -15,37 +15,45 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 	"strings"
 )
 
 type Flags struct {
-	Delimiter string
-	Fields    string
-	Separated bool
+	Delimiter string // -d
+	Fields    string // -f
+	Separated bool   // -s
 }
 
 func Cut(delimiter string, columns []int, separatedOnly bool, input io.Reader) {
+	// Сканер для построчного чтения
 	scanner := bufio.NewScanner(input)
+	// Цикл сканирования строк
 	for scanner.Scan() {
 		line := scanner.Text()
 
+		// Проверка флага separatedOnly и пропуск строки, если она не содержит разделителя и флаг установлен
 		if separatedOnly && !strings.Contains(line, delimiter) {
 			continue
 		}
 
+		// Разбиение строки на поля с использованием указанного разделителя
 		fields := strings.Split(line, delimiter)
 		output := make([]string, len(columns))
 
+		// Перебор указанных столбцов и добавление соответствующих значений в выходной массив
 		for i, col := range columns {
 			if col >= 1 && col <= len(fields) {
 				output[i] = fields[col-1]
 			}
 		}
 
+		// Вывод результата с введенным разделителем
 		fmt.Println(strings.Join(output, delimiter))
 	}
 }
 
+// Парсит аргументы коммандной строки
 func parseFlags() Flags {
 	delimiter := flag.String("d", "\t", "field delimiter")
 	fields := flag.String("f", "", "selected columns")
@@ -62,23 +70,33 @@ func parseFlags() Flags {
 	return flg
 }
 
-func parseInt(s string) int {
-	var n int
-	fmt.Sscanf(s, "%d", &n)
-	return n
+// Преобразует строку в целое число
+func parseInt(str string) int {
+	num, err := strconv.Atoi(str)
+	if err != nil {
+		return 0
+	}
+
+	return num
+}
+
+// Создаем слайс для указанных столбцов
+func calculateFields(flg *Flags) []int {
+	fields := []int{}
+	fieldsInput := strings.Split(flg.Fields, ",")
+	for _, fieldStr := range fieldsInput {
+		field := strings.TrimSpace(fieldStr)
+		if field != "" {
+			fields = append(fields, parseInt(field))
+		}
+	}
+
+	return fields
 }
 
 func main() {
 	flg := parseFlags()
+	fields := calculateFields(&flg)
 
-	columns := []int{}
-	columnsInput := strings.Split(flg.Fields, ",")
-	for _, colStr := range columnsInput {
-		col := strings.TrimSpace(colStr)
-		if col != "" {
-			columns = append(columns, parseInt(col))
-		}
-	}
-
-	Cut(flg.Delimiter, columns, flg.Separated, os.Stdin)
+	Cut(flg.Delimiter, fields, flg.Separated, os.Stdin)
 }
