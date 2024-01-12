@@ -20,8 +20,10 @@ import (
 	Программа должна проходить все тесты. Код должен проходить проверки go vet и golint.
 */
 
+// Сортировка массива строк с использование алгоритма быстрой сортировки
 func quickSort(words []string, start, end int) *[]string {
 	if start < end {
+		// Выбор опорного элемента
 		pivot := words[start]
 		left := start + 1
 		right := end
@@ -42,6 +44,7 @@ func quickSort(words []string, start, end int) *[]string {
 
 		words[start], words[right] = words[right], words[start]
 
+		// Рекурсивное применение quickSort к двум частям массива
 		words = *quickSort(words, start, right-1)
 		words = *quickSort(words, right+1, end)
 	}
@@ -49,27 +52,38 @@ func quickSort(words []string, start, end int) *[]string {
 	return &words
 }
 
-func toLower(words []string) *[]string {
-	result := make([]string, len(words))
-	for i, str := range words {
+// Приводит строки к нижнему регистру
+func toLower(words *[]string) *[]string {
+	result := make([]string, len(*words))
+
+	for i, str := range *words {
 		result[i] = strings.ToLower(str)
 	}
+
 	return &result
 }
 
+// Сортирует символы в строке
 func sortChars(word string) string {
 	chars := strings.Split(word, "")
 	sort.Strings(chars)
+
 	return strings.Join(chars, "")
 }
 
+// Поиск анаграмм
 func FindAnagrams(dict *[]string) *map[string][]string {
-	dict = toLower(*dict)
+	// Приводим массив строк к нижнему регистру
+	dict = toLower(dict)
+
+	// Применяем быструю сортировку к масиву строк
 	dict = quickSort(*dict, 0, len(*dict)-1)
 
+	// Создаем временную карты для хранения анаграмм
 	tempMap := make(map[string][]string)
 	nameMap := make(map[string]string)
 
+	// Поиск аннаграм в массиве строк
 	for _, word := range *dict {
 		if len(word) > 1 {
 			sortedWord := sortChars(word)
@@ -82,6 +96,7 @@ func FindAnagrams(dict *[]string) *map[string][]string {
 		}
 	}
 
+	// Формируем результирующую карту анаграмм
 	resultMap := make(map[string][]string)
 	for sortedWord, word := range tempMap {
 		if len(word) != 0 {

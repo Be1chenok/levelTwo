@@ -30,22 +30,34 @@ import (
 */
 
 type Flags struct {
-	Input        string
-	Output       string
-	ColumnSort   int
-	NumericSort  bool
-	ReverseSort  bool
-	UniqueValues bool
+	Input        string // -in входной файл
+	Output       string // -out выходной файл
+	ColumnSort   int    // -k
+	NumericSort  bool   // -n
+	ReverseSort  bool   // -r
+	UniqueValues bool   // -u
 }
 
+/*
+Переупорядочивает строки в массиве strs таким образом, чтобы строки,
+начинающиеся с заглавной буквы, следовали после строк, начинающихся с
+прописной буквы.
+*/
 func fixUpperCase(strs []string) []string {
+	// Обход по всем строкам слайса strs
 	for i := 0; i < len(strs)-1; i++ {
-		str1 := []rune(strs[i])
-		str2 := []rune(strs[i+1])
+		// Текущая строка
+		currentStr := []rune(strs[i])
+		// Следующая строка
+		nextStr := []rune(strs[i+1])
 
-		if unicode.ToLower(str1[0]) == unicode.ToLower(str2[0]) &&
-			unicode.IsUpper(str1[0]) &&
-			unicode.IsLower(str2[0]) {
+		/*
+			Если текущая строка strs[i] начинается с заглавной буквы, а следующая строка strs[i+1]
+			начинается с прописной буквы, то строки меняются местами.
+		*/
+		if unicode.ToLower(currentStr[0]) == unicode.ToLower(nextStr[0]) &&
+			unicode.IsUpper(currentStr[0]) &&
+			unicode.IsLower(nextStr[0]) {
 			temp := strs[i]
 			strs[i] = strs[i+1]
 			strs[i+1] = temp
@@ -55,13 +67,20 @@ func fixUpperCase(strs []string) []string {
 	return strs
 }
 
+/*
+Сортировка слайса строк с использованием алгоритма быстрой сортировки
+start - индекс начала сортировки
+end - индекс конца сортировки
+*/
 func quickSort(strs []string, start, end int, numericSort bool) []string {
 	if start < end {
+		// Выбор опорного элемента
 		pivot := strs[start]
 		left := start
 		right := end
 
 		for left < right {
+			// Если не числовая сортировка
 			if !numericSort {
 				for left < right && strings.ToLower(strs[right]) >= strings.ToLower(pivot) {
 					right--
@@ -89,6 +108,7 @@ func quickSort(strs []string, start, end int, numericSort bool) []string {
 				left++
 			}
 
+			// Если не числовая сортировка
 			if !numericSort {
 				for left < right && strings.ToLower(strs[left]) <= strings.ToLower(pivot) {
 					left++
@@ -117,89 +137,117 @@ func quickSort(strs []string, start, end int, numericSort bool) []string {
 			}
 		}
 
+		// Помещение опорного элемента на правильное место
 		strs[left] = pivot
 
+		// Рекурсивное применение quickSort к двум частям массива
 		strs = quickSort(strs, start, left-1, numericSort)
 		strs = quickSort(strs, left+1, end, numericSort)
 	}
 
+	// Создание нового массива и копирование отсортированных строк
 	sortedStrs := make([]string, len(strs))
 	copy(sortedStrs, strs)
 	return sortedStrs
 }
 
+// Удаляем дублиуаты из слайса строк
 func onlyUnique(data []string) []string {
 	res := make([]string, 0, len(data))
 	m := make(map[string]struct{})
+
 	for _, str := range data {
 		if _, ok := m[str]; !ok {
 			m[str] = struct{}{}
 			res = append(res, str)
 		}
 	}
+
 	return res
 }
 
-func reversed(data []string) {
+// Инвертирует порядок элементов в слайсе
+func reversed(data []string) []string {
 	for i, j := 0, len(data)-1; i < j; i, j = i+1, j-1 {
 		data[i], data[j] = data[j], data[i]
 	}
+
+	return data
 }
 
+// Получение ключей из карты в виде массива строк.
 func getKeysOfMap(m map[string]string) []string {
 	keys := make([]string, 0, len(m))
 	for k := range m {
 		keys = append(keys, k)
 	}
+
 	return keys
 }
 
+// Сортирует массив строк strs по заданному столбцу
 func sortByColumn(strs []string, flg Flags) []string {
-	srcMap := make(map[string]string)
+	sourceMap := make(map[string]string)
 	for _, str := range strs {
 		columns := strings.Split(str, " ")
 		if len(columns) > flg.ColumnSort {
-			srcMap[columns[flg.ColumnSort]] = str
+			sourceMap[columns[flg.ColumnSort]] = str
 			continue
 		}
-		srcMap[columns[0]] = str
+		sourceMap[columns[0]] = str
 	}
-	keysToBeSorted := getKeysOfMap(srcMap)
+
+	keysToBeSorted := getKeysOfMap(sourceMap)
 	quickSort(keysToBeSorted, 0, len(keysToBeSorted)-1, flg.NumericSort)
 	sortedStrs := make([]string, len(strs))
+
 	for i, key := range keysToBeSorted {
-		sortedStrs[i] = srcMap[key]
+		sortedStrs[i] = sourceMap[key]
 	}
+
 	return sortedStrs
 }
 
 func Sort(flg Flags) {
+	// Считываем строки из входного файла
 	strs := readFile(flg.Input)
 
+	// Создаем пустой слайс result
 	result := make([]string, len(strs))
+	// копируем строки из strs в result
 	copy(result, strs)
 
 	if flg.ColumnSort >= 0 {
+		// Сортируем массив по заданному столбцу
 		result = sortByColumn(result, flg)
+		// Решаем проблему с заглавными буквами
 		result = fixUpperCase(result)
 	} else {
+		// Сортировка всего слайса
 		result = quickSort(result, 0, len(result)-1, false)
+		// Решаем проблему с заглавными буквами
 		result = fixUpperCase(result)
 	}
 
 	if flg.UniqueValues {
+		// Сортируем всего слайса
 		result = quickSort(result, 0, len(result)-1, false)
+		// Решаем проблему с заглавными буквами
 		result = fixUpperCase(result)
+		// Оставляем только уникальные строки
 		result = onlyUnique(result)
 	}
 
 	if flg.ReverseSort {
-		reversed(result)
+		// Инвертируем порядок строк
+		result = reversed(result)
 	}
 
+	// Записываем строки в выходной файл
 	writeToFile(flg.Output, result)
 }
 
+// Чтение из файла
 func readFile(fileName string) []string {
 	var rows []string
 
@@ -222,6 +270,7 @@ func readFile(fileName string) []string {
 	return rows
 }
 
+// Запись в файл
 func writeToFile(fileName string, strs []string) {
 	file, err := os.Create(fileName)
 	if err != nil {
@@ -240,6 +289,7 @@ func writeToFile(fileName string, strs []string) {
 	}
 }
 
+// Парсит аргументы командной строки
 func parseFlags() Flags {
 	in := flag.String("in", "", "input file path")
 	out := flag.String("out", "", "output file path")
@@ -259,6 +309,7 @@ func parseFlags() Flags {
 		UniqueValues: *uniqueValues,
 	}
 
+	// Если флаги in и out отсутствуют
 	if *in == "" || *out == "" {
 		log.Fatal("required: input and output files")
 	}

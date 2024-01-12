@@ -66,11 +66,11 @@ func TestUnpack(t *testing.T) {
 			result, err := Unpack(test.input)
 
 			if result != test.expected {
-				t.Errorf("Expected %s, got %s", test.expected, result)
+				t.Errorf("expected %s, got %s", test.expected, result)
 			}
 
 			if err != test.err {
-				t.Errorf("Expected %s, got %s", test.err.Error(), err.Error())
+				t.Errorf("expected %s, got %s", test.err.Error(), err.Error())
 			}
 		})
 	}

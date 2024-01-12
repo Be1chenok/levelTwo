@@ -17,15 +17,23 @@ import (
 	Программа должна проходить проверки go vet и golint.
 */
 
+// константа с адресом NTP-сервера
 const timeHost = "0.beevik-ntp.pool.ntp.org"
 
 func main() {
+	// Получение текущего времени с помощью NTP-сервера
 	time, err := ntp.Time(timeHost)
 	if err != nil {
+		/*
+			В случае ошибки выводим сообщение об ошибке
+			в стандартный поток ошибок и завершаем программу с кодом -1
+		*/
 		fmt.Fprintf(os.Stderr, "%v", err)
 		os.Exit(-1)
 	}
 
+	// Вывод текущего времени в стандартный поток вывода
 	fmt.Fprintf(os.Stdout, "current time: %s\n", time.Format("15:04:05"))
+	// Вывод точного времени (с миллисекундами и наносекундами) в стандартный поток вывода
 	fmt.Fprintf(os.Stdout, "exact time: %s", time.Format("15:04:05.000000000"))
 }
