@@ -76,14 +76,14 @@ func FindAnagrams(dict *[]string) *map[string][]string {
 	// Приводим массив строк к нижнему регистру
 	dict = toLower(dict)
 
-	// Применяем быструю сортировку к масиву строк
+	// Применяем быструю сортировку к массиву строк
 	dict = quickSort(*dict, 0, len(*dict)-1)
 
 	// Создаем временную карты для хранения анаграмм
 	tempMap := make(map[string][]string)
 	nameMap := make(map[string]string)
 
-	// Поиск аннаграм в массиве строк
+	// Поиск анаграмм в массиве строк
 	for _, word := range *dict {
 		if len(word) > 1 {
 			sortedWord := sortChars(word)

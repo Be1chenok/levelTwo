@@ -1,7 +1,7 @@
 package pattern
 
 /*
-	Паттерн стратегия позволяет выбирать один из нескольких вариантов поведенияво время выполнения программы,
+	Паттерн стратегия позволяет выбирать один из нескольких вариантов поведения во время выполнения программы,
 	путем инкапсуляции связанных операций в отдельные классы и предоставления им общего интерфейса.
 */
 
@@ -28,7 +28,7 @@ type Product struct {
 }
 
 // Стратегия (позволяет варьировать способ оплаты не затрагивая логику заказа)
-func proccessOrder(products []Product, payment Payment) error {
+func processOrder(products []Product, payment Payment) error {
 	var sum float32
 	for _, product := range products {
 		sum += product.Price
@@ -102,5 +102,5 @@ func main() {
 		payment = NewQIWIPayment("+79991112233", "qwerty123")
 	}
 
-	proccessOrder(products, payment)
+	processOrder(products, payment)
 }

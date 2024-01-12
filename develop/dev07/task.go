@@ -40,7 +40,7 @@ import (
 */
 
 func or(channels ...<-chan interface{}) <-chan interface{} {
-	// Создаем канал out который будет использоватьсся для объединения значений из done-каналов
+	// Создаем канал out который будет использоваться для объединения значений из done-каналов
 	out := make(chan interface{})
 
 	// WaitGroup для ожидания завершения всех done-каналов
@@ -55,7 +55,7 @@ func or(channels ...<-chan interface{}) <-chan interface{} {
 				// запись значений из done-канала в out
 				out <- value
 			}
-			// декриментируем счетчик
+			// декрементируем счетчик
 			wg.Done()
 		}(ch)
 	}

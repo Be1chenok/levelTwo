@@ -25,7 +25,7 @@ import (
 */
 
 type Flags struct {
-	Inpput           string // in входной файл
+	Input            string // in входной файл
 	Pattern          string // -p паттерн
 	AfterLines       int    // -A
 	BeforeLines      int    // -B
@@ -39,7 +39,7 @@ type Flags struct {
 
 func Grep(flg Flags) {
 	// Открываем файл
-	file, err := os.Open(flg.Inpput)
+	file, err := os.Open(flg.Input)
 	if err != nil {
 		log.Fatalf("failed to open file: %v", err)
 	}
@@ -164,7 +164,7 @@ func Grep(flg Flags) {
 	}
 }
 
-// Парсит аргументы коммандной строки
+// Парсит аргументы командной строки
 func parseFlags() Flags {
 	input := flag.String("in", "", "file to search in")
 	pattern := flag.String("p", "", "pattern to search for")
@@ -180,7 +180,7 @@ func parseFlags() Flags {
 	flag.Parse()
 
 	flg := Flags{
-		Inpput:           *input,
+		Input:            *input,
 		Pattern:          *pattern,
 		AfterLines:       *afterLines,
 		BeforeLines:      *beforeLines,

@@ -53,7 +53,7 @@ func Cut(delimiter string, columns []int, separatedOnly bool, input io.Reader) {
 	}
 }
 
-// Парсит аргументы коммандной строки
+// Парсит аргументы командной строки
 func parseFlags() Flags {
 	delimiter := flag.String("d", "\t", "field delimiter")
 	fields := flag.String("f", "", "selected columns")
