@@ -97,7 +97,7 @@ func parseFlags() *Flags {
 	flag.Parse()
 
 	if flag.NArg() != 2 {
-		log.Fatal("usage: go-telnet --timeout=<timeout> host port")
+		log.Fatal("usage: go run task.go --timeout=<timeout> host port")
 	}
 
 	host := flag.Arg(0)

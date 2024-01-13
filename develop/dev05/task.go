@@ -166,8 +166,6 @@ func Grep(flg Flags) {
 
 // Парсит аргументы командной строки
 func parseFlags() Flags {
-	input := flag.String("in", "", "file to search in")
-	pattern := flag.String("p", "", "pattern to search for")
 	afterLines := flag.Int("A", 0, "print N lines after each match")
 	beforeLines := flag.Int("B", 0, "print N lines before each match")
 	contextLines := flag.Int("C", 0, "print N lines around each match (before and after)")
@@ -179,9 +177,16 @@ func parseFlags() Flags {
 
 	flag.Parse()
 
+	if flag.NArg() != 2 {
+		log.Fatalf("usage: go run task.go file pattern")
+	}
+
+	input := flag.Arg(0)
+	pattern := flag.Arg(1)
+
 	flg := Flags{
-		Input:            *input,
-		Pattern:          *pattern,
+		Input:            input,
+		Pattern:          pattern,
 		AfterLines:       *afterLines,
 		BeforeLines:      *beforeLines,
 		ContextLines:     *contextLines,
@@ -190,11 +195,6 @@ func parseFlags() Flags {
 		InvertMatch:      *invertMatch,
 		FixedStringMatch: *fixedStringMatch,
 		PrintLineNumbers: *printLineNumbers,
-	}
-
-	// Если не ввели паттерн и входной файл
-	if *pattern == "" || *input == "" {
-		log.Fatal("required: pattern and file")
 	}
 
 	return flg

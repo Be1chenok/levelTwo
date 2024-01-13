@@ -291,8 +291,6 @@ func writeToFile(fileName string, strs []string) {
 
 // Парсит аргументы командной строки
 func parseFlags() Flags {
-	in := flag.String("in", "", "input file path")
-	out := flag.String("out", "", "output file path")
 	columnSort := flag.Int("k", -1, "column number for sorting")
 	numericSort := flag.Bool("n", false, "sort numerically")
 	reverseSort := flag.Bool("r", false, "sort in reverse order")
@@ -300,18 +298,20 @@ func parseFlags() Flags {
 
 	flag.Parse()
 
+	if flag.NArg() != 2 {
+		log.Fatal("usage: go task.go input-file output-file")
+	}
+
+	in := flag.Arg(0)
+	out := flag.Arg(1)
+
 	flg := Flags{
-		Input:        *in,
-		Output:       *out,
+		Input:        in,
+		Output:       out,
 		ColumnSort:   *columnSort,
 		NumericSort:  *numericSort,
 		ReverseSort:  *reverseSort,
 		UniqueValues: *uniqueValues,
-	}
-
-	// Если флаги in и out отсутствуют
-	if *in == "" || *out == "" {
-		log.Fatal("required: input and output files")
 	}
 
 	return flg
