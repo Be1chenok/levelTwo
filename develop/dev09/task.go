@@ -69,9 +69,17 @@ func downloadLinks(url string) error {
 	file := createFile(fileName)
 	defer file.Close()
 
-	_, err = io.Copy(file, resp.Body)
-	if err != nil {
-		return fmt.Errorf("failed to save file %s: %v", fileName, err)
+	if err := writeToFile(file, resp.Body); err != nil {
+		return fmt.Errorf("failed to write to file %s: %v", fileName, err)
+	}
+
+	return nil
+}
+
+// Запись в файл
+func writeToFile(file *os.File, body io.Reader) error {
+	if _, err := io.Copy(file, body); err != nil {
+		return fmt.Errorf("failed to save file: %v", err)
 	}
 
 	return nil
@@ -112,12 +120,7 @@ func extractLinks(url string) ([]string, error) {
 	}
 
 	links := visitNode([]string{}, doc)
-
-	for i := range links {
-		if !strings.HasPrefix(links[i], "https://") && !strings.HasPrefix(links[i], "http://") {
-			links[i] = normalizedUrl(url, links[i])
-		}
-	}
+	links = normalizedLinks(url, links)
 
 	return links, nil
 }
@@ -153,8 +156,9 @@ func getFileName(url string) string {
 	return result
 }
 
+// Проверяет первую ссылку на правильность ввода и по надобности в конце добавляет /
 func normalizedInputUrl(url string) (string, bool) {
-	if !strings.HasPrefix(url, "https://") && !strings.HasPrefix(url, "http://") {
+	if !strings.Contains(url, "://") {
 		return "", false
 	}
 
@@ -166,9 +170,15 @@ func normalizedInputUrl(url string) (string, bool) {
 }
 
 // Нормализация ссылок
-func normalizedUrl(parentUrl, url string) string {
-	url, _ = strings.CutPrefix(url, "/")
-	return fmt.Sprintf("%s%s", parentUrl, url)
+func normalizedLinks(parentUrl string, links []string) []string {
+	for i := range links {
+		if !strings.Contains(links[i], "://") {
+			links[i], _ = strings.CutPrefix(links[i], "/")
+			links[i] = fmt.Sprintf("%s%s", parentUrl, links[i])
+		}
+	}
+
+	return links
 }
 
 // Парсит аргументы командной строки
@@ -187,11 +197,6 @@ func parseFlags() Flags {
 		Url:        url,
 		OutputPath: out,
 		Depth:      *depth,
-	}
-
-	// Если флаги url и out отсутствуют
-	if url == "" || out == "" {
-		log.Fatal("required: url and output path")
 	}
 
 	// Если глубина обхода меньше 0

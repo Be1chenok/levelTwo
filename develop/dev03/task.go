@@ -151,7 +151,7 @@ func quickSort(strs []string, start, end int, numericSort bool) []string {
 	return sortedStrs
 }
 
-// Удаляем дублиуаты из слайса строк
+// Удаляем дубликаты из слайса строк
 func onlyUnique(data []string) []string {
 	res := make([]string, 0, len(data))
 	m := make(map[string]struct{})
